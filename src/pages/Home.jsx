@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Plug } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { getReceiptDashboard } from "@/api/receiptChecks";
 import StatCard from "@/components/StatCard";
 import CheckList from "@/components/CheckList";
 import PipelineSteps from "@/components/PipelineSteps";
@@ -20,39 +20,25 @@ export default function Home() {
     const load = async () => {
       setLoading(true);
       setError(null);
-      const since = new Date();
-      since.setHours(0, 0, 0, 0);
-      const dayStart = since.toISOString();
-
       try {
-        const [today, fakes, agg, page] = await Promise.all([
-          base44.entities.ReceiptCheck.count({ created_date: { $gte: dayStart } }),
-          base44.entities.ReceiptCheck.count({ verdict: "fake", created_date: { $gte: dayStart } }),
-          base44.entities.ReceiptCheck.aggregate({
-            query: { created_date: { $gte: dayStart } },
-            sum: ["amount"],
-            avg: ["processing_ms"],
-          }),
-          base44.entities.ReceiptCheck.list({ sort: "-created_date", limit: 6 }),
-        ]);
+        const dashboard = await getReceiptDashboard();
         if (!active) return;
 
-        const row = (agg.rows && agg.rows[0]) || {};
         setStats([
-          { label: "Checks today", value: String(today ?? 0), sub: "forwarded to the bot" },
+          { label: "Checks today", value: String(dashboard.today), sub: "forwarded to the bot" },
           {
             label: "Flagged fake",
-            value: String(fakes ?? 0),
-            sub: today ? `${Math.round((fakes / today) * 100)}% of checks` : "none yet",
+            value: String(dashboard.fake),
+            sub: dashboard.today ? `${Math.round((dashboard.fake / dashboard.today) * 100)}% of checks` : "none yet",
           },
-          { label: "Value reviewed", value: formatCompactNaira(row.sum_amount || 0), sub: "today" },
+          { label: "Value reviewed", value: formatCompactNaira(dashboard.valueReviewed), sub: "today" },
           {
             label: "Avg read",
-            value: row.avg_processing_ms ? `${(row.avg_processing_ms / 1000).toFixed(1)}s` : "—",
+            value: dashboard.averageReadMs ? `${(dashboard.averageReadMs / 1000).toFixed(1)}s` : "—",
             sub: "screenshot to verdict",
           },
         ]);
-        setChecks(page.items);
+        setChecks(dashboard.recent);
       } catch (loadError) {
         if (active) setError(loadError);
       } finally {
@@ -115,7 +101,9 @@ export default function Home() {
       </section>
 
       <section className="grid gap-5 lg:grid-cols-[1.45fr_1fr]">
-        {!error && !loading && <CheckList checks={checks || []} />}
+        {!error && !loading && (
+          <CheckList checks={checks || []} emptyHint="Nothing here yet. Forward a transfer screenshot to your Telegram bot." />
+        )}
         <PipelineSteps />
       </section>
     </div>

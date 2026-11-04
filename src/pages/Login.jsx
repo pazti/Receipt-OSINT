@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { loginWithMfa, continueMfa, loginWithGoogle } from "@/lib/authMfa";
+import { signInWithEmail, signInWithGoogle } from "@/lib/firebaseAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,11 +23,7 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const result = await loginWithMfa(email, password);
-      if (result.mfa_required) {
-        await continueMfa(result, returnTo);
-        return;
-      }
+      await signInWithEmail(email, password);
       window.location.href = returnTo;
     } catch (err) {
       setError(err.message || "Invalid email or password");
@@ -37,7 +33,7 @@ export default function Login() {
   };
 
   const handleGoogle = async () => {
-    try { await loginWithGoogle(returnTo); }
+    try { await signInWithGoogle(); window.location.href = returnTo; }
     catch (err) { setError(err.message || 'Unable to sign in with Google'); }
   };
 

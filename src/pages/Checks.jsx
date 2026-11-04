@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { getReceiptChecks } from "@/api/receiptChecks";
 import CheckList from "@/components/CheckList";
 import LoadError from "@/components/LoadError";
 
@@ -23,11 +23,8 @@ export default function Checks() {
       setLoading(true);
       setError(null);
       try {
-        const page = await base44.entities.ReceiptCheck.filter(
-          filter === "all" ? {} : { verdict: filter },
-          { sort: "-created_date", limit: 50 }
-        );
-        if (active) setChecks(page.items);
+        const records = await getReceiptChecks({ verdict: filter === "all" ? undefined : filter });
+        if (active) setChecks(records);
       } catch (loadError) {
         if (active) setError(loadError);
       } finally {

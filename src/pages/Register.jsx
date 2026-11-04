@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { continueMfa, loginWithGoogle } from "@/lib/authMfa";
+import { registerWithEmail, resendVerificationEmail, signInWithGoogle } from "@/lib/firebaseAuth";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
-import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Register() {
@@ -19,7 +17,7 @@ export default function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
+  const { user } = useAuth();
   const loginPath = "/login" + (safeReturnTo() !== "/" ? "?returnTo=" + encodeURIComponent(safeReturnTo()) : "");
 
   const handleSubmit = async (e) => {
@@ -31,7 +29,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await base44.auth.register({ email, password });
+      await registerWithEmail(email, password);
       setShowOtp(true);
     } catch (err) {
       setError(err.message || "Registration failed");
@@ -44,15 +42,8 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      const result = await base44.auth.verifyOtp({ email, otpCode });
-      if (result?.mfa_required) {
-        // The account is already verified, so a retry here would fail; sign in again instead.
-        await continueMfa(result, safeReturnTo()).catch(() => window.location.assign(loginPath));
-        return;
-      }
-      if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
-      }
+      await user.reload();
+      if (!user.emailVerified) throw new Error("Open the verification link in your email, then try again.");
       window.location.href = safeReturnTo();
     } catch (err) {
       setError(err.message || "Invalid verification code");
@@ -64,18 +55,15 @@ export default function Register() {
   const handleResend = async () => {
     setError("");
     try {
-      await base44.auth.resendOtp(email);
-      toast({
-        title: "Code sent",
-        description: "Check your email for the new code.",
-      });
+      await resendVerificationEmail(user);
+      setError("A new verification email has been sent.");
     } catch (err) {
       setError(err.message || "Failed to resend code");
     }
   };
 
   const handleGoogle = async () => {
-    try { await loginWithGoogle(safeReturnTo()); }
+    try { await signInWithGoogle(); window.location.href = safeReturnTo(); }
     catch (err) { setError(err.message || 'Unable to sign in with Google'); }
   };
 
@@ -84,35 +72,21 @@ export default function Register() {
       <AuthLayout
         icon={Mail}
         title="Verify your email"
-        subtitle={`We sent a code to ${email}`}
+        subtitle={`We sent a verification link to ${email}`}
+        footer={<Link to={loginPath} className="text-primary font-medium hover:underline">Back to log in</Link>}
       >
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
             {error}
           </div>
         )}
-        <div className="flex justify-center mb-6">
-          <InputOTP
-            maxLength={6}
-            value={otpCode}
-            onChange={setOtpCode}
-            autoFocus
-            autoComplete="one-time-code"
-          >
-            <InputOTPGroup>
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
-            </InputOTPGroup>
-          </InputOTP>
-        </div>
+        <p className="mb-6 text-center text-sm text-muted-foreground">
+          Verify your email address to finish setting up your account.
+        </p>
         <Button
           className="w-full h-12 font-medium"
           onClick={handleVerify}
-          disabled={loading || otpCode.length < 6}
+          disabled={loading}
         >
           {loading ? (
             <>
@@ -120,7 +94,7 @@ export default function Register() {
               Verifying...
             </>
           ) : (
-            "Verify"
+            "I've verified my email"
           )}
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">

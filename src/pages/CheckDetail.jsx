@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Check, X } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { getReceiptCheck, getReceiptImageUrl } from "@/api/receiptChecks";
 import VerdictBadge from "@/components/VerdictBadge";
 import RiskMeter from "@/components/RiskMeter";
 import { formatNaira, formatWhen } from "@/lib/format";
@@ -61,19 +61,15 @@ export default function CheckDetail() {
       setImageUrl("");
       setCheck(null);
       try {
-        const record = await base44.entities.ReceiptCheck.get(id).catch((loadError) => {
-          if (loadError?.status === 404) return null;
-          throw loadError;
-        });
+        const record = await getReceiptCheck(id);
         if (!active) return;
         setCheck(record);
-        if (record?.file_uri) {
+        if (record?.image_data_url) {
+          setImageUrl(record.image_data_url);
+        } else if (record?.storage_path) {
           try {
-            const { signed_url } = await base44.integrations.Core.CreateFileSignedUrl({
-              file_uri: record.file_uri,
-              expires_in: 3600,
-            });
-            if (active) setImageUrl(signed_url);
+            const url = await getReceiptImageUrl(record.storage_path);
+            if (active) setImageUrl(url);
           } catch (loadError) {
             if (active) setImageError(loadError);
           }
@@ -175,7 +171,7 @@ export default function CheckDetail() {
               </div>
             ) : (
               <div className="flex h-64 items-center justify-center text-[12px] text-muted-foreground">
-                {check.file_uri ? "Preparing image…" : "No image stored for this check"}
+                {check.storage_path ? "Preparing image…" : "No image stored for this check"}
               </div>
             )}
           </div>

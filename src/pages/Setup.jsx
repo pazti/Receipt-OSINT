@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { callTelegramConnect } from "@/api/telegram";
 import { getErrorMessage } from "@/lib/errorMessage";
 
 const STEPS = [
@@ -12,7 +12,7 @@ const STEPS = [
   {
     n: "02",
     title: "Store the token",
-    body: "Paste it into Dashboard → Secrets as TELEGRAM_BOT_TOKEN. It is already set for this app.",
+    body: "Add it to the Vercel project as TELEGRAM_BOT_TOKEN. Keep it out of the browser and source control.",
   },
   {
     n: "03",
@@ -32,10 +32,10 @@ export default function Setup() {
     setBusy(true);
     setError("");
     try {
-      const res = await base44.functions.invoke("telegramConnect", { action });
-      if (res.data.error) setError(res.data.error);
-      setStatus(res.data);
-      setVerifier(res.data.verify_endpoint || "");
+      const result = await callTelegramConnect({ action });
+      if (result.error) setError(result.error);
+      setStatus(result);
+      setVerifier(result.verify_endpoint || "");
     } catch (err) {
       setError(getErrorMessage(err, "Could not connect to Telegram. Please try again."));
     } finally {
@@ -52,7 +52,7 @@ export default function Setup() {
     setError("");
     setSavedVerifier(false);
     try {
-      await base44.functions.invoke("telegramConnect", { action: "save-verifier", verify_endpoint: verifier });
+      await callTelegramConnect({ action: "save-verifier", verify_endpoint: verifier });
       setSavedVerifier(true);
       setTimeout(() => setSavedVerifier(false), 2000);
     } catch (err) {
