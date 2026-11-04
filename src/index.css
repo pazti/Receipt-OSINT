@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 200 24% 4%;
+    --foreground: 200 16% 93%;
+    --card: 200 20% 6.5%;
+    --card-foreground: 200 16% 93%;
+    --popover: 200 20% 7%;
+    --popover-foreground: 200 16% 93%;
+    --primary: 78 90% 62%;
+    --primary-foreground: 200 30% 6%;
+    --secondary: 200 14% 11%;
+    --secondary-foreground: 200 16% 92%;
+    --muted: 200 14% 11%;
+    --muted-foreground: 200 9% 58%;
+    --accent: 200 14% 14%;
+    --accent-foreground: 200 16% 94%;
+    --destructive: 4 82% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 200 12% 15%;
+    --input: 200 12% 16%;
+    --ring: 78 90% 62%;
+    --radius: 0.9rem;
+    --chart-1: 78 90% 62%;
+    --chart-2: 156 62% 50%;
+    --chart-3: 38 94% 58%;
+    --chart-4: 4 82% 60%;
+    --chart-5: 200 60% 60%;
+    --font-heading: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --real: 156 62% 48%;
+    --warn: 38 94% 58%;
+    --fake: 4 82% 60%;
+    --sidebar-background: 200 22% 5%;
+    --sidebar-foreground: 200 16% 93%;
+    --sidebar-primary: 78 90% 62%;
+    --sidebar-primary-foreground: 200 30% 6%;
+    --sidebar-accent: 200 14% 12%;
+    --sidebar-accent-foreground: 200 16% 93%;
+    --sidebar-border: 200 12% 14%;
+    --sidebar-ring: 78 90% 62%;
+  }
+
+  .dark {
+    --background: 200 24% 4%;
+    --foreground: 200 16% 93%;
+    --card: 200 20% 6.5%;
+    --card-foreground: 200 16% 93%;
+    --popover: 200 20% 7%;
+    --popover-foreground: 200 16% 93%;
+    --primary: 78 90% 62%;
+    --primary-foreground: 200 30% 6%;
+    --secondary: 200 14% 11%;
+    --secondary-foreground: 200 16% 92%;
+    --muted: 200 14% 11%;
+    --muted-foreground: 200 9% 58%;
+    --accent: 200 14% 14%;
+    --accent-foreground: 200 16% 94%;
+    --destructive: 4 82% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 200 12% 15%;
+    --input: 200 12% 16%;
+    --ring: 78 90% 62%;
+    --real: 156 62% 48%;
+    --warn: 38 94% 58%;
+    --fake: 4 82% 60%;
+    --sidebar-background: 200 22% 5%;
+    --sidebar-foreground: 200 16% 93%;
+    --sidebar-primary: 78 90% 62%;
+    --sidebar-primary-foreground: 200 30% 6%;
+    --sidebar-accent: 200 14% 12%;
+    --sidebar-accent-foreground: 200 16% 93%;
+    --sidebar-border: 200 12% 14%;
+    --sidebar-ring: 78 90% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    font-feature-settings: "ss01", "cv01";
+  }
+
+  ::selection {
+    @apply bg-primary/25 text-foreground;
+  }
+}
