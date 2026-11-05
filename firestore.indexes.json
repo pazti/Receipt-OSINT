@@ -30,6 +30,16 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "ownerUid", "order": "ASCENDING" },
+        { "fieldPath": "created_date", "order": "ASCENDING" },
+        { "fieldPath": "amount", "order": "ASCENDING" },
+        { "fieldPath": "processing_ms", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "receiptChecks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "ownerUid", "order": "ASCENDING" },
         { "fieldPath": "verdict", "order": "ASCENDING" },
         { "fieldPath": "created_date", "order": "ASCENDING" }
       ]
