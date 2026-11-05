@@ -92,8 +92,12 @@ export default async function handler(req, res) {
     await checkRef.create(record);
 
     const amountLine = analysis.amount === null ? "Amount: not found" : `Amount: NGN ${analysis.amount.toLocaleString("en-NG")}`;
-    const refLine = analysis.reference ? `Reference: ${analysis.reference}` : "Reference: not found";
-    await reply(message.chat.id, `OCR complete. ${amountLine}\n${refLine}\nVerdict: inconclusive. Confirm the credit in your bank account.`);
+    const refLine = analysis.reference
+      ? `Reference: ${analysis.reference}`
+      : analysis.reference_note?.startsWith("Reference text was detected")
+        ? "Reference: OCR unclear; check the image"
+        : "Reference: not found";
+    await reply(message.chat.id, `OCR complete (${analysis.ocr_confidence}% text confidence). ${amountLine}\n${refLine}\nVerdict: inconclusive. Check the extracted details and confirm the credit in your bank account.`);
   } catch (error) {
     console.error("Receipt processing failed:", error);
     try {
