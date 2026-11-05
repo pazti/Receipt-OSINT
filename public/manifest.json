@@ -1,0 +1,8 @@
+{
+  "name": "ReceiptCheck",
+  "short_name": "ReceiptCheck",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0e0c",
+  "theme_color": "#101210"
+}
